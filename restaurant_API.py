@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, json
+from flask import Flask, jsonify, request, json, Response
 import geopy.distance
 
 app = Flask(__name__)
@@ -16,23 +16,29 @@ def get_restaurants():
 
 @app.route('/restaurants/search/', methods=['GET'])
 def get_restaurant():
-    """ Return the data of all restaurants that include the queried tag in their        tags and are less than 3 kilometers away from the queried location.
+    """ Return the data of all restaurants that include the queried tag in their
+        tags and are less than 3 kilometers away from the queried location.
     """
-    tag = request.args.get('q', type=str)
-    lat = request.args.get('lat', type=float)
-    lon = request.args.get('lon', type=float)
-    queried_location = (lon, lat)
+    try:
+        tag = request.args['q']
+        lat = float(request.args['lat'])
+        lon = float(request.args['lon'])
+    except KeyError:
+        return Response(json.dumps({'error': 'Bad query parameters.'}),
+                        status=400,
+                        mimetype="application/json")
+    else:
+        queried_location = (lon, lat)
+        matching_restaurants = []
+        for restaurant in restaurant_dict['restaurants']:
+            if tag in restaurant['tags']:
+                current_location = restaurant['location']
+                distance = geopy.distance.distance(queried_location,
+                                                   current_location).m
+                if distance < 3000:
+                    matching_restaurants.append(restaurant)
 
-    matching_restaurants = []
-    for restaurant in restaurant_dict['restaurants']:
-        if tag in restaurant['tags']:
-            current_location = restaurant['location']
-            distance = geopy.distance.distance(queried_location,
-                                               current_location).m
-            if distance < 3000:
-                matching_restaurants.append(restaurant)
-
-    return jsonify(matching_restaurants)
+        return jsonify(matching_restaurants)
 
 
 if __name__ == '__main__':
