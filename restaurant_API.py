@@ -23,6 +23,8 @@ def get_restaurant():
         tag = request.args['q']
         lat = float(request.args['lat'])
         lon = float(request.args['lon'])
+
+    # some or all of the query parameters were invalid
     except KeyError:
         return Response(json.dumps({'error': 'Bad query parameters.'}),
                         status=400,
@@ -38,6 +40,7 @@ def get_restaurant():
                 if distance < 3000:
                     matching_restaurants.append(restaurant)
 
+        # returns HTTP 200 OK, along with the queried data
         return jsonify(matching_restaurants)
 
 
