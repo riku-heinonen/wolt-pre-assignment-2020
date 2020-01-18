@@ -1,5 +1,8 @@
 ## Introduction
-This is my pre-assignment for the Wolt 2020 backend internship application. I decided to use Python for the task as that's the language I am most familiar with. The API was created using *Flask* and it also uses the *geopy* module to calculate distances between coordinate pairs.
+This is my pre-assignment for the Wolt 2020 backend internship application. The repository contains a REST API that serves restaurant data in JSON format. I decided to use *Python* for the task as that's the language I am most familiar with. The API was created using [*Flask*](https://pypi.org/project/Flask/) and it also uses the [*geopy*](https://pypi.org/project/geopy/) module to calculate distances between coordinate pairs.
+
+## Blurhash
+ I also familiarised myself with blurhash as per the bonus task. Calculating the blurhash uses the python modules [*blurhash*](https://pypi.org/project/blurhash/) for calculating the hash, [*Pillow*](https://pypi.org/project/Pillow/) and [*numpy*](https://pypi.org/project/numpy/) for handling images and [*requests*](https://pypi.org/project/requests/) to fetch the images from the urls in the dataset. According to blurha.sh and the *blurhash* module the blurhashes in the given dataset are of invalid length and cannot be decoded. For this reason I decided to recalculate the blurhashes when loading the data.
 
 ## Usage
 The repository includes a *requirements.txt* file which lists all the Python dependencies.  Before installing them it is advised to create and activate a virtual environment (Python 3.6 and higher)
