@@ -6,15 +6,22 @@ import blurhash
 import requests
 import io
 
+
+# Config
+
+# If true, recalculates the blurhashes of the dataset
+# which takes a few seconds when the server starts.
+RECALCULATE_HASHES = False
+
 app = Flask(__name__)
 
 
 def calculate_hash(image_url):
-    ''' Calculate the blurhash for an url containing an image '''
+    ''' Calculate the blurhash of an image '''
     image_response = requests.get(image_url, stream=True)
     image_content = image_response.content
     image = Image.open(io.BytesIO(image_content))
-    # downscaling the image yields much better performance 
+    # downscaling the image yields much better performance
     # with little to no quality loss as the image is blurred anyway
     size = (20, 20)
     downscaled = ImageOps.fit(image, size, Image.NEAREST)
@@ -25,46 +32,54 @@ def calculate_hash(image_url):
 
 # initialise the dataset
 with open('restaurants.json', 'r') as file:
-    restaurant_dict = json.load(file)
-    for restaurant in restaurant_dict['restaurants']:
-        # recalculate the invalid blurhashes in the dataset
-        new_hash = calculate_hash(restaurant['image'])
-        restaurant['blurhash'] = new_hash
+    restaurants = json.load(file)['restaurants']
+    if RECALCULATE_HASHES:
+        for restaurant in restaurants:
+            # recalculate the invalid blurhashes in the dataset
+            new_hash = calculate_hash(restaurant['image'])
+            restaurant['blurhash'] = new_hash
 
 
 @app.route('/restaurants/', methods=['GET'])
 def get_restaurants():
-    ''' Return the data of all restaurants in the database '''
-    return jsonify(restaurant_dict['restaurants'])
+    ''' 
+        Return HTTP 200 along with the data
+        of all restaurants in the dataset. 
+    '''
+    return jsonify(restaurants)
 
 
 @app.route('/restaurants/search/', methods=['GET'])
 def get_restaurant():
-    ''' Return the data of all restaurants that include the queried tag in their
-        tags and are less than 3 kilometers away from the queried location.
+    ''' 
+        Fetch all restaurants that include the queried tag in their
+        name, description or tags and are less than 3 kilometers away
+        from the queried location. Return HTTP 200 along with the queried
+        data or HTTP 400 if the query parameters were invalid. 
     '''
     try:
         tag = request.args['q']
         lat = float(request.args['lat'])
         lon = float(request.args['lon'])
 
-    # some or all of the query parameters were invalid
-    except KeyError:
-        return Response(json.dumps({'error': 'Bad query parameters.'}),
+    # missing or invalid parameters
+    except (KeyError, ValueError):
+        return Response(json.dumps({'error': 'Invalid query parameters.'}),
                         status=400,
                         mimetype="application/json")
     else:
         queried_location = (lon, lat)
         matching_restaurants = []
-        for restaurant in restaurant_dict['restaurants']:
-            if tag in restaurant['tags']:
+        for restaurant in restaurants:
+            if any(tag in field for field in [restaurant['description'],
+                                              restaurant['name'],
+                                              restaurant['tags']]):
                 current_location = restaurant['location']
                 distance = geopy.distance.distance(queried_location,
                                                    current_location).m
                 if distance < 3000:
                     matching_restaurants.append(restaurant)
 
-        # returns HTTP 200 OK, along with the queried data
         return jsonify(matching_restaurants)
 
 
