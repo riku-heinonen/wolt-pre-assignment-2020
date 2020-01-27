@@ -1,8 +1,8 @@
 ## Introduction
-This is my pre-assignment for the Wolt 2020 backend internship application. The repository contains a REST API that serves restaurant data in JSON format. I decided to use *Python*, more specifically [*Flask*](https://pypi.org/project/Flask/), for the task as *Python* is the language I am most familiar with.
+This is my submission for the pre-assignment of Wolt 2020 backend internship application. The assignment was to create a RESTful API that serves restaurant data in JSON format. I decided to use Python, more specifically [Flask](https://pypi.org/project/Flask/), for the task as Python is the language I am most familiar with.
 
 ## Blurhash
- I also familiarised myself with blurhash as per the bonus task. According to blurha.sh and the [*blurhash*](https://pypi.org/project/blurhash/) module the blurhashes in the given dataset are of invalid length and cannot be decoded. For this reason I decided to add an option to recalculate the blurhashes when loading the data. This option can be enabled by setting the RECALCULATE_HASHES at the top of *server.py* to True. Calculating the blurhashes uses the python modules [*blurhash*](https://pypi.org/project/blurhash/) for calculating the hash, [*Pillow*](https://pypi.org/project/Pillow/) and [*numpy*](https://pypi.org/project/numpy/) for handling images and [*requests*](https://pypi.org/project/requests/) to fetch the images from the URLs in the dataset. 
+I also familiarised myself with blurhash as per the bonus task. According to blurha.sh and the [blurhash](https://pypi.org/project/blurhash/) module the blurhashes in the given dataset are of invalid length and cannot be decoded. For this reason I decided to add an option to recalculate the blurhashes when loading the data. This option can be enabled by setting the RECALCULATE_HASHES at the top of server.py to True. Calculating the blurhashes uses the python modules [blurhash](https://pypi.org/project/blurhash/) for calculating the hash, [Pillow](https://pypi.org/project/Pillow/) and [numpy](https://pypi.org/project/numpy/) for handling images and [requests](https://pypi.org/project/requests/) to fetch the images from the URLs in the dataset. 
 
 ## Setup
 The application is written in Python 3.7.5. Python can be [downloaded from here](https://www.python.org/downloads/) if you do not have it installed yet.
@@ -33,10 +33,10 @@ The API has two URL routes
 
 
 2. /restaurants/search/q=\<tag\>&lat=\<lat\>&lon=\<lon\>
-    * For accessing all data of the restaurants which match the parameters in the query string. In the URL \<lat\> and \<lon\> represent the latitude and longitude of a restaurant and \<tag\> a tag included in the restaurant's data. The API returns all restaurants that match the tag and are less than 3 kilometers away from the queried location.
+    * For accessing all data of the restaurants which match the parameters in the query string. In the URL \<lat\> and \<lon\> represent the latitude and longitude of a restaurant and \<tag\> a tag included in the restaurant's data. The API returns all restaurants that mention the queried tag in their name, description or tags and are less than 3 kilometers away from the queried location.
 
 ## Tests
-The server can be tested with [*pytest*](https://docs.pytest.org/en/latest/) (included in requirements.txt) by simply running: 
+The server can be unit tested with [pytest](https://docs.pytest.org/en/latest/) (included in requirements.txt) by simply running: 
 ```
 pytest
 ```
