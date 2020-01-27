@@ -15,12 +15,12 @@ RECALCULATE_HASHES = False
 
 app = Flask(__name__)
 
-
 def calculate_hash(image_url):
     ''' Calculate the blurhash of an image '''
     image_response = requests.get(image_url, stream=True)
     image_content = image_response.content
     image = Image.open(io.BytesIO(image_content))
+
     # downscaling the image yields much better performance
     # with little to no quality loss as the image is blurred anyway
     size = (20, 20)
@@ -33,8 +33,13 @@ def calculate_hash(image_url):
 # initialise the dataset
 with open('restaurants.json', 'r') as file:
     restaurants = json.load(file)['restaurants']
-    if RECALCULATE_HASHES:
-        for restaurant in restaurants:
+    for restaurant in restaurants:
+        # make the location attribute a dictionary
+        # to avoid confusion later on
+        location = {'lat': restaurant['location'][1],
+                    'lon: restaurant['location'][0]}
+        restaurant['location'] = location
+        if RECALCULATE_HASHES:
             # recalculate the invalid blurhashes in the dataset
             new_hash = calculate_hash(restaurant['image'])
             restaurant['blurhash'] = new_hash
@@ -68,13 +73,13 @@ def get_restaurant():
                         status=400,
                         mimetype="application/json")
     else:
-        queried_location = (lon, lat)
+        queried_location = (lat, lon)
         matching_restaurants = []
         for restaurant in restaurants:
             if any(tag in field for field in [restaurant['description'],
                                               restaurant['name'],
                                               restaurant['tags']]):
-                current_location = restaurant['location']
+                current_location = (restaurant['location']['lat'], restaurant['location']['lon'])                             
                 distance = geopy.distance.distance(queried_location,
                                                    current_location).m
                 if distance < 3000:
