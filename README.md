@@ -32,7 +32,7 @@ The API has two URL routes
     * For accessing all data of all restaurants in the database 
 
 
-2. /restaurants/search/q=\<tag\>&lat=\<lat\>&lon=\<lon\>
+2. /restaurants/search/?q=\<tag\>&lat=\<lat\>&lon=\<lon\>
     * For accessing all data of the restaurants which match the parameters in the query string. In the URL \<lat\> and \<lon\> represent the latitude and longitude of a restaurant and \<tag\> a tag included in the restaurant's data. The API returns all restaurants that mention the queried tag in their name, description or tags and are less than 3 kilometers away from the queried location.
 
 ## Tests
