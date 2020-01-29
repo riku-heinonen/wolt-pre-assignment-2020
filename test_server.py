@@ -32,7 +32,7 @@ def coordinates():
         "min_lat": min(latitudes),
         "max_lat": max(latitudes),
         "min_lon": min(longitudes),
-        "max_lon": max(longitudes)
+        "max_lon": max(longitudes),
     }
 
 
@@ -71,24 +71,53 @@ def test_random_queries(tags, coordinates):
             response_list = json.loads(response.data)
             for restaurant in response_list:
                 tag_fields = [
-                    restaurant["name"], restaurant["description"],
-                    restaurant["tags"]
+                    restaurant["name"],
+                    restaurant["description"],
+                    restaurant["tags"],
                 ]
                 assert any(tag in field for field in tag_fields)
 
-                current_location = (restaurant["location"]["lat"],
-                                    restaurant["location"]["lon"])
+                current_location = (
+                    restaurant["location"]["lat"],
+                    restaurant["location"]["lon"],
+                )
                 distance = geopy.distance.distance(queried_location,
                                                    current_location)
                 assert distance.m < 3000
 
 
-def test_invalid_query():
+def test_non_numeric_coordinates():
     """
-        Test that giving invalid query parameters returns HTTP 400 bad request
+        Test that giving non-numeric latitude and/or longitude returns
+        HTTP 400 Bad request and a suitable error message.
     """
+    latitude = "some_string"
+    longitude = "another_string"
     response = app.test_client().get(
-        "/restaurants/search/?q=sushi&lat=latitude&lon=longitude")
+        f"/restaurants/search/?q=sushi&lat={latitude}&lon={longitude}")
     response_data = json.loads(response.data)
     assert response.status_code == 400
-    assert response_data["error"] == "Invalid query parameters."
+    assert (response_data["error"]["title"] ==
+            "Queried latitude and longitude must be numeric.")
+
+    # error description should include the
+    # queried latitude and longitude for debugging
+    assert all(x in response_data["error"]["description"]
+               for x in [latitude, longitude])
+
+
+def test_missing_query_parameters():
+    """
+        Test that giving a query string with missing parameters returns
+        HTTP 400 Bad request and a suitable error message.
+    """
+    response = app.test_client().get("/restaurants/search/?q=sushi&lat=60.12")
+    response_data = json.loads(response.data)
+    assert response.status_code == 400
+    assert response_data["error"]["title"] == "Missing query parameters."
+
+    response = app.test_client().get(
+        "/restaurants/search/?lat=60.12&lon=24.93147")
+    response_data = json.loads(response.data)
+    assert response.status_code == 400
+    assert response_data["error"]["title"] == "Missing query parameters."
