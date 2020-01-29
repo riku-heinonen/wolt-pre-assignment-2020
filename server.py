@@ -69,13 +69,30 @@ def get_restaurant():
         lat = float(request.args["lat"])
         lon = float(request.args["lon"])
 
-    # missing or invalid parameters
-    except (KeyError, ValueError):
-        return Response(
-            json.dumps({"error": "Invalid query parameters."}),
-            status=400,
-            mimetype="application/json",
-        )
+    # missing or invalid parameters, return HTTP 400 Bad request,
+    # along with an error message
+    except KeyError as e:
+        return jsonify({
+            "error": {
+                "title":
+                "Missing query parameters.",
+                "description":
+                ("One or more expected query parameters were missing. "
+                 "Make sure that your URL includes a tag, a latitude and a longitude."
+                 )
+            }
+        }), 400
+    except ValueError:
+        return jsonify({
+            "error": {
+                "title":
+                "Queried latitude and longitude must be numeric.",
+                "description":
+                ("Cannot calculate distance between "
+                 f"latitude: {request.args['lat']} and longitude: {request.args['lon']}"
+                 )
+            }
+        }), 400
     else:
         queried_location = (lat, lon)
         matching_restaurants = []
