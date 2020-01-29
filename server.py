@@ -10,7 +10,7 @@ import io
 
 # If true, recalculates the blurhashes of the dataset
 # which takes a few seconds when the server starts.
-RECALCULATE_HASHES = False
+RECALCULATE_HASHES = True
 
 app = Flask(__name__)
 
